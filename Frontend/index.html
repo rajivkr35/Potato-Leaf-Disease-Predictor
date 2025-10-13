@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potato Leaf Disease Predictor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #d9f0d9; /* Light green background */
+        }
+
+        .bg-blur {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.85);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between items-center p-4">
+
+    <!-- Main Card -->
+    <div class="bg-blur shadow-2xl rounded-2xl p-8 w-full max-w-lg text-center">
+        <h1 class="text-3xl font-extrabold text-green-800 mb-6">🍀 Potato Leaf Disease Predictor</h1>
+
+        <div class="mb-6">
+            <input type="file" id="imageInput" accept="image/*"
+                   class="border border-green-300 rounded px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-green-500" />
+        </div>
+
+        <button id="predictBtn"
+                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition-all duration-300 shadow-lg mb-6 w-full">
+            Predict
+        </button>
+
+        <div id="result"
+             class="hidden border-l-4 p-4 rounded-lg shadow-md text-left mb-6">
+            <p class="text-lg"><strong>Predicted Class:</strong> <span id="predictedClass" class="font-semibold"></span></p>
+            <p class="text-lg"><strong>Confidence:</strong> <span id="confidence" class="font-semibold"></span>%</p>
+        </div>
+
+        <div class="flex justify-center">
+            <img id="preview" class="rounded-lg max-h-64 hidden shadow-md border border-green-200" src="" alt="Image Preview">
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-white text-sm py-4 w-full bg-green-800 bg-opacity-90 mt-6">
+        <p>Built by <span class="font-semibold">Rajiv Kumar</span> 🌱</p>
+    </footer>
+
+    <script>
+        const imageInput = document.getElementById("imageInput");
+        const predictBtn = document.getElementById("predictBtn");
+        const resultDiv = document.getElementById("result");
+        const predictedClassSpan = document.getElementById("predictedClass");
+        const confidenceSpan = document.getElementById("confidence");
+        const previewImg = document.getElementById("preview");
+
+        // Map class to border color
+        const classBorderColors = {
+            "Early Blight": "border-red-500 bg-red-50",
+            "Late Blight": "border-orange-500 bg-orange-50",
+            "Healthy": "border-green-500 bg-green-50"
+        };
+
+        imageInput.addEventListener("change", () => {
+            const file = imageInput.files[0];
+            if (file) {
+                previewImg.src = URL.createObjectURL(file);
+                previewImg.classList.remove("hidden");
+                resultDiv.classList.add("hidden");
+            }
+        });
+
+        predictBtn.addEventListener("click", async () => {
+            const file = imageInput.files[0];
+            if (!file) {
+                alert("Please select an image first.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            predictBtn.disabled = true;
+            predictBtn.textContent = "Predicting...";
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/predict", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const predictedClass = data.predicted_class;
+                    predictedClassSpan.textContent = predictedClass;
+                    confidenceSpan.textContent = (data.confidence * 100).toFixed(2);
+
+                    // Set dynamic border and background color
+                    resultDiv.className = `border-l-4 p-4 rounded-lg shadow-md text-left mb-6 ${classBorderColors[predictedClass]}`;
+
+                    resultDiv.classList.remove("hidden");
+                } else {
+                    alert(data.detail || "Error predicting the image.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Failed to fetch prediction. Make sure FastAPI is running.");
+            } finally {
+                predictBtn.disabled = false;
+                predictBtn.textContent = "Predict";
+            }
+        });
+    </script>
+
+</body>
+</html>
