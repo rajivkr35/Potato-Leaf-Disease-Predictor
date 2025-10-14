@@ -12,7 +12,6 @@ origins = [
    " https://potato-leaf-disease-prediction.netlify.app/",
     "http://127.0.0.1:3000",
     "http://localhost:3000",
-    "*",  # allow all origins (not recommended for production)
 ]
 
 app.add_middleware(
