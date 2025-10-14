@@ -73,46 +73,50 @@
         });
 
         predictBtn.addEventListener("click", async () => {
-            const file = imageInput.files[0];
-            if (!file) {
-                alert("Please select an image first.");
-                return;
-            }
+    const file = imageInput.files[0];
+    if (!file) {
+        alert("Please select an image first.");
+        return;
+    }
 
-            const formData = new FormData();
-            formData.append("file", file);
+    const formData = new FormData();
+    formData.append("file", file);
 
-            predictBtn.disabled = true;
-            predictBtn.textContent = "Predicting...";
+    predictBtn.disabled = true;
+    predictBtn.textContent = "Predicting...";
 
-            try {
-                const response = await fetch("https://potato-leaf-disease-predictor-1.onrender.com/predict", {
-                    method: "POST",
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    const predictedClass = data.predicted_class;
-                    predictedClassSpan.textContent = predictedClass;
-                    confidenceSpan.textContent = (data.confidence * 100).toFixed(2);
-
-                    // Set dynamic border and background color
-                    resultDiv.className = `border-l-4 p-4 rounded-lg shadow-md text-left mb-6 ${classBorderColors[predictedClass]}`;
-
-                    resultDiv.classList.remove("hidden");
-                } else {
-                    alert(data.detail || "Error predicting the image.");
-                }
-            } catch (error) {
-                console.error(error);
-                alert("Failed to fetch prediction. Make sure FastAPI is running.");
-            } finally {
-                predictBtn.disabled = false;
-                predictBtn.textContent = "Predict";
-            }
+    try {
+        const response = await fetch("https://potato-leaf-disease-predictor-1.onrender.com/predict", {
+            method: "POST",
+            body: formData
         });
+
+        const data = await response.json();
+        console.log("Prediction response:", data);  // debug
+
+        if (response.ok) {
+            const predictedClass = data.predicted_class.trim(); // <--- trim spaces
+            const confidence = (data.confidence * 100).toFixed(2);
+
+            predictedClassSpan.textContent = predictedClass;
+            confidenceSpan.textContent = confidence;
+
+            const colorClass = classBorderColors[predictedClass] || "border-gray-500 bg-gray-50";
+
+            resultDiv.className = `border-l-4 p-4 rounded-lg shadow-md text-left mb-6 ${colorClass}`;
+            resultDiv.classList.remove("hidden");
+        } else {
+            alert(data.detail || "Error predicting the image.");
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Failed to fetch prediction. Make sure FastAPI is running.");
+    } finally {
+        predictBtn.disabled = false;
+        predictBtn.textContent = "Predict";
+    }
+});
+
     </script>
 
 </body>
