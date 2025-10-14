@@ -30,11 +30,11 @@ MODEL_PATH = "./Models/1.keras" # Use your .keras model
 model = load_model(MODEL_PATH) 
 class_names = ['Early Blight', 'Late Blight', 'Healthy'] 
 # verify that the FastAPI server is running.
- @app.get("/ping") 
- async def ping():
+@app.get("/ping") 
+async def ping():
     return "Hello, I am Rajiv." 
 
- def read_file_as_image(data) -> np.ndarray: 
+def read_file_as_image(data) -> np.ndarray: 
     image = Image.open(BytesIO(data)) 
     image = np.array(image) 
     return image 
