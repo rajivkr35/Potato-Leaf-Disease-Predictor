@@ -10,8 +10,8 @@ app = FastAPI()
 
 origins = [
    " https://potato-leaf-disease-prediction-35.netlify.app/",
-    "http://127.0.0.1:3000",
-    "http://localhost:3000",
+    # "http://127.0.0.1:3000",
+    # "http://localhost:3000",
 ]
 
 app.add_middleware(
