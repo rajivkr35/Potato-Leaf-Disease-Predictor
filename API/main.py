@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
 origins = [
-   " https://potato-leaf-disease-prediction.netlify.app/",
+   " https://68eddb155118d4f93b87d8dd--potato-leaf-disease-prediction-35.netlify.app/",
     "http://127.0.0.1:3000",
     "http://localhost:3000",
 ]
