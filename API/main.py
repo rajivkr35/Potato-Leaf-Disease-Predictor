@@ -26,34 +26,19 @@ app.add_middleware(
 # ------------------------
 # Load model
 # ------------------------
-MODEL_PATH = "./Models/1.keras"
-try:
-    model = load_model(MODEL_PATH)
-except Exception as e:
-    print(f"Error loading model: {e}")
-    model = None
+MODEL_PATH = "./Models/1.keras" # Use your .keras model 
+model = load_model(MODEL_PATH) 
+class_names = ['Early Blight', 'Late Blight', 'Healthy'] 
+# verify that the FastAPI server is running.
+ @app.get("/ping") 
+ async def ping():
+    return "Hello, I am Rajiv." 
 
-class_names = ['Early Blight', 'Late Blight', 'Healthy']
-
-# ------------------------
-# Health check endpoint
-# ------------------------
-@app.get("/ping")
-async def ping():
-    return {"message": "Hello, I am Rajiv."}
-
-# ------------------------
-# Helper: Read and preprocess image
-# ------------------------
-def read_file_as_image(data) -> np.ndarray:
-    image = Image.open(BytesIO(data))
-    image = np.array(image)
-    return image
-
-
-# ------------------------
-# Prediction endpoint
-# ------------------------
+ def read_file_as_image(data) -> np.ndarray: 
+    image = Image.open(BytesIO(data)) 
+    image = np.array(image) 
+    return image 
+    
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     try:
