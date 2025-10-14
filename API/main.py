@@ -46,22 +46,16 @@ async def ping():
 # Helper: Read and preprocess image
 # ------------------------
 def read_file_as_image(data) -> np.ndarray:
-    image = Image.open(BytesIO(data)).convert("RGB")
-    image = image.resize((224, 224))  # adjust to model input size
-    image_array = np.array(image) / 255.0  # normalize
-    return image_array
+    image = Image.open(BytesIO(data))
+    image = np.array(image)
+    return image
+
 
 # ------------------------
 # Prediction endpoint
 # ------------------------
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-    if model is None:
-        return JSONResponse(
-            status_code=500,
-            content={"detail": "Model not loaded."}
-        )
-
     try:
         # Read and preprocess image
         image = read_file_as_image(await file.read())
