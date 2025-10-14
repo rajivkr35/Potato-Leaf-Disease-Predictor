@@ -1,44 +1,67 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 from io import BytesIO
 from PIL import Image
 from tensorflow.keras.models import load_model
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+# ------------------------
+# CORS configuration
+# ------------------------
 origins = [
-   " https://potato-leaf-disease-prediction-35.netlify.app/",
-    # "http://127.0.0.1:3000",
-    # "http://localhost:3000",
+    "https://potato-leaf-disease-prediction-35.netlify.app",  # exact frontend URL, no spaces or trailing slash
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,  # restrict to your frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-MODEL_PATH = "./Models/1.keras"  # Use your .keras model
-model = load_model(MODEL_PATH)
+# ------------------------
+# Load model
+# ------------------------
+MODEL_PATH = "./Models/1.keras"
+try:
+    model = load_model(MODEL_PATH)
+except Exception as e:
+    print(f"Error loading model: {e}")
+    model = None
+
 class_names = ['Early Blight', 'Late Blight', 'Healthy']
 
-# verify that the FastAPI server is running.
+# ------------------------
+# Health check endpoint
+# ------------------------
 @app.get("/ping")
 async def ping():
-    return "Hello, I am Rajiv."
+    return {"message": "Hello, I am Rajiv."}
 
-
+# ------------------------
+# Helper: Read and preprocess image
+# ------------------------
 def read_file_as_image(data) -> np.ndarray:
-    image = Image.open(BytesIO(data))
-    image = np.array(image)
-    return image
+    image = Image.open(BytesIO(data)).convert("RGB")
+    image = image.resize((224, 224))  # adjust to model input size
+    image_array = np.array(image) / 255.0  # normalize
+    return image_array
 
+# ------------------------
+# Prediction endpoint
+# ------------------------
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
+    if model is None:
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Model not loaded."}
+        )
+
     try:
         # Read and preprocess image
         image = read_file_as_image(await file.read())
@@ -60,4 +83,14 @@ async def predict(file: UploadFile = File(...)):
             content={"detail": str(e)}
         )
 
-# uvicorn API.main:app --reload
+# ------------------------
+# Optional root endpoint
+# ------------------------
+@app.get("/")
+async def root():
+    return {"message": "Potato Leaf Disease API is running!"}
+
+# ------------------------
+# Note: On Render, start your app with:
+# uvicorn API.main:app --host 0.0.0.0 --port $PORT
+# ------------------------
