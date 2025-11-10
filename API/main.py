@@ -8,29 +8,26 @@ from tensorflow.keras.models import load_model
 
 app = FastAPI()
 
-# ------------------------
+
 # CORS configuration
-# ------------------------
 origins = [
-    "https://potato-leaf-disease-prediction-35.netlify.app",  # exact frontend URL, no spaces or trailing slash
+    "https://potato-leaf-disease-prediction-35.netlify.app",  
      "http://127.0.0.1:3000",
     "http://localhost:3000",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # restrict to your frontend
+    allow_origins=origins,  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ------------------------
-# Load model
-# ------------------------
-MODEL_PATH = "./Models/1.keras" # Use your .keras model 
+MODEL_PATH = "./Models/1.keras" 
 model = load_model(MODEL_PATH) 
 class_names = ['Early Blight', 'Late Blight', 'Healthy'] 
+
 # verify that the FastAPI server is running.
 @app.get("/ping") 
 async def ping():
@@ -64,14 +61,8 @@ async def predict(file: UploadFile = File(...)):
             content={"detail": str(e)}
         )
 
-# ------------------------
-# Optional root endpoint
-# ------------------------
 @app.get("/")
 async def root():
     return {"message": "Potato Leaf Disease API is running!"}
 
-# ------------------------
-# Note: On Render, start your app with:
 # uvicorn API.main:app --host 0.0.0.0 --port $PORT
-# ------------------------
